@@ -1,0 +1,123 @@
+{
+  "name": "ALONE WhatsApp Bot",
+  "description": "ALONE — futuristic multi-language WhatsApp bot (Baileys) by AKARSHANA",
+  "keywords": [
+    "whatsapp",
+    "baileys",
+    "bot",
+    "nodejs",
+    "cyberpunk"
+  ],
+  "stack": "heroku-24",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "env": {
+    "BOT_NAME": {
+      "description": "Bot display name",
+      "value": "ALONE"
+    },
+    "OWNER_NAME": {
+      "description": "Owner display name",
+      "value": "AKARSHANA"
+    },
+    "OWNER_NUMBER": {
+      "description": "Owner number, digits only with country code",
+      "value": "94714768679"
+    },
+    "PREFIX": {
+      "description": "Command prefix",
+      "value": "."
+    },
+    "MONGODB_URI": {
+      "description": "MongoDB connection string (Atlas free tier works). Stores sessions, settings, languages.",
+      "required": true
+    },
+    "PAIR_NUMBER": {
+      "description": "Number to link as the MAIN session (use the owner's WhatsApp number for VIP features). The pairing code appears in the dyno logs.",
+      "value": "94714768679"
+    },
+    "DEFAULT_LANG": {
+      "description": "en | si | ar | hi",
+      "value": "en"
+    },
+    "ALLOW_PUBLIC_LINK": {
+      "description": "Let other people link their own WhatsApp with .connect",
+      "value": "true"
+    },
+    "MAX_SESSIONS": {
+      "description": "Maximum linked user sessions",
+      "value": "10"
+    },
+    "MAX_MEDIA_MB": {
+      "description": "Max download size in MB",
+      "value": "60"
+    },
+    "TZ": {
+      "description": "Time zone",
+      "value": "Asia/Colombo"
+    },
+    "OPENAI_API_KEY": {
+      "description": "Optional — enables .gpt",
+      "required": false
+    },
+    "OPENAI_MODEL": {
+      "description": "OpenAI model",
+      "value": "gpt-4o-mini",
+      "required": false
+    },
+    "GEMINI_API_KEY": {
+      "description": "Optional — enables .gemini",
+      "required": false
+    },
+    "GEMINI_MODEL": {
+      "description": "Gemini model",
+      "value": "gemini-2.0-flash",
+      "required": false
+    },
+    "OMDB_API_KEY": {
+      "description": "Optional — movie info",
+      "required": false
+    },
+    "BANNER_URL": {
+      "description": "Optional — image URL shown on the main menu",
+      "required": false
+    },
+    "MAX_FILM_MB": {
+      "description": "Max film size in MB sent as ONE WhatsApp document (WhatsApp limit is 2048)",
+      "value": "1800",
+      "required": false
+    },
+    "FILM_QUALITY": {
+      "description": "Preferred max film height (360/480/720/1080). Auto steps down to fit.",
+      "value": "720",
+      "required": false
+    },
+    "FILM_MAX_MINUTES": {
+      "description": "Longest video allowed for .film / .filmdl",
+      "value": "300",
+      "required": false
+    },
+    "FILM_CONCURRENCY": {
+      "description": "Films processed at the same time (1 is safest on a basic dyno)",
+      "value": "1",
+      "required": false
+    },
+    "YT_COOKIES": {
+      "description": "Optional — YouTube cookies as a JSON array (fixes bot-check on Heroku IPs)",
+      "required": false
+    },
+    "YT_PROXY": {
+      "description": "Optional — proxy URL for YouTube downloads",
+      "required": false
+    }
+  }
+}
