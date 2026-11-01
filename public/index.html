@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ALONE BOT — Futuristic WhatsApp Bot</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --neon-green: #00ff88;
+      --neon-cyan: #00e5ff;
+      --neon-purple: #b24bff;
+      --neon-pink: #ff006e;
+      --dark-bg: #020408;
+      --card-bg: rgba(0, 255, 136, 0.03);
+      --border: rgba(0, 255, 136, 0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--dark-bg);
+      color: #e0ffe8;
+      font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── ANIMATED BG ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(0,255,136,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(0,229,255,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(178,75,255,0.04) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Grid overlay */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none; z-index: 0;
+      animation: gridMove 20s linear infinite;
+    }
+    @keyframes gridMove { from { background-position: 0 0; } to { background-position: 60px 60px; } }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      background: rgba(2,4,8,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 4px;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: rgba(224,255,232,0.6); text-decoration: none;
+      font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--neon-green); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 100px 2rem 4rem;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(0,255,136,0.08);
+      border: 1px solid rgba(0,255,136,0.3);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-size: 0.8rem; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--neon-green);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s ease both;
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--neon-green);
+      animation: pulse 1.5s ease infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+
+    .hero-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(4rem, 12vw, 9rem);
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #fff 0%, var(--neon-green) 50%, var(--neon-cyan) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: fadeUp 0.8s 0.1s ease both;
+      position: relative;
+    }
+    .hero-title::after {
+      content: 'ALONE';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: blur(40px); opacity: 0.3;
+      z-index: -1;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: rgba(224,255,232,0.5);
+      letter-spacing: 6px; text-transform: uppercase;
+      margin: 1rem 0 0.5rem;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+    .hero-desc {
+      font-size: 1.1rem; max-width: 600px;
+      color: rgba(224,255,232,0.65);
+      line-height: 1.8; margin: 1.5rem auto 2.5rem;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .hero-btns {
+      display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+      color: #020408; font-weight: 700;
+      padding: 14px 36px; border-radius: 50px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem; letter-spacing: 2px;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 30px rgba(0,255,136,0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 60px rgba(0,255,136,0.6);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(0,255,136,0.4);
+      color: var(--neon-green);
+      padding: 14px 36px; border-radius: 50px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem; letter-spacing: 2px;
+      text-decoration: none; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      background: rgba(0,255,136,0.08);
+      border-color: var(--neon-green);
+      box-shadow: 0 0 30px rgba(0,255,136,0.2);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center; gap: 0; flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,255,136,0.02);
+      animation: fadeUp 0.8s 0.5s ease both;
+    }
+    .stat-item {
+      padding: 2rem 3rem;
+      border-right: 1px solid var(--border);
+      text-align: center;
+      flex: 1; min-width: 150px;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.2rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      display: block;
+    }
+    .stat-label {
+      font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase;
+      color: rgba(224,255,232,0.4); margin-top: 4px;
+    }
+
+    /* ── SECTIONS ── */
+    section { position: relative; z-index: 1; }
+
+    .section-header {
+      text-align: center; padding: 5rem 2rem 3rem;
+    }
+    .section-tag {
+      font-size: 0.75rem; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--neon-green); margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff, rgba(224,255,232,0.7));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    /* ── FEATURES GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5px;
+      padding: 0 0 5rem;
+      max-width: 1400px; margin: 0 auto;
+    }
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      position: relative; overflow: hidden;
+      transition: all 0.3s;
+      cursor: default;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,255,136,0.05), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .feature-card:hover { border-color: rgba(0,255,136,0.4); transform: translateY(-4px); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-card:hover .feature-glow { opacity: 1; }
+
+    .feature-glow {
+      position: absolute; top: -50%; right: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(ellipse at top right, rgba(0,255,136,0.06), transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .feature-icon {
+      font-size: 2.5rem; margin-bottom: 1.2rem;
+      display: block;
+    }
+    .feature-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1rem; font-weight: 700;
+      color: var(--neon-green); letter-spacing: 1px;
+      margin-bottom: 0.8rem;
+    }
+    .feature-desc {
+      font-size: 0.95rem; line-height: 1.7;
+      color: rgba(224,255,232,0.55);
+    }
+    .feature-tag {
+      display: inline-block; margin-top: 1rem;
+      font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0,229,255,0.3);
+      padding: 3px 10px; border-radius: 50px;
+    }
+
+    /* ── COMMANDS SHOWCASE ── */
+    .commands-section {
+      padding: 0 2rem 5rem;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .cmd-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .cmd-category {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+      transition: all 0.3s;
+    }
+    .cmd-category:hover { border-color: rgba(0,255,136,0.4); }
+    .cmd-cat-icon { font-size: 1.8rem; margin-bottom: 0.5rem; display: block; }
+    .cmd-cat-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem; font-weight: 700;
+      color: var(--neon-green); letter-spacing: 2px;
+      margin-bottom: 0.8rem;
+    }
+    .cmd-list { list-style: none; }
+    .cmd-list li {
+      font-size: 0.85rem; color: rgba(224,255,232,0.5);
+      padding: 3px 0; border-bottom: 1px solid rgba(0,255,136,0.05);
+      font-family: monospace;
+    }
+    .cmd-list li:last-child { border-bottom: none; }
+    .cmd-list li span {
+      color: var(--neon-cyan);
+    }
+
+    /* ── TERMINAL ── */
+    .terminal-section {
+      padding: 0 2rem 5rem;
+      max-width: 900px; margin: 0 auto;
+    }
+    .terminal {
+      background: #0a0f0a;
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(0,255,136,0.1);
+    }
+    .terminal-bar {
+      background: rgba(0,255,136,0.05);
+      border-bottom: 1px solid rgba(0,255,136,0.1);
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .t-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .t-red { background: #ff5f57; }
+    .t-yellow { background: #ffbd2e; }
+    .t-green { background: #28ca41; }
+    .t-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.7rem; color: rgba(0,255,136,0.4);
+      margin-left: auto; letter-spacing: 2px;
+    }
+    .terminal-body { padding: 2rem; font-family: 'Courier New', monospace; font-size: 0.9rem; }
+    .t-line { margin-bottom: 0.5rem; }
+    .t-prompt { color: var(--neon-green); }
+    .t-cmd { color: #fff; }
+    .t-out { color: rgba(224,255,232,0.5); }
+    .t-success { color: var(--neon-green); }
+    .t-info { color: var(--neon-cyan); }
+    .t-warn { color: #ffd700; }
+    .cursor {
+      display: inline-block; width: 8px; height: 16px;
+      background: var(--neon-green);
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── HOW IT WORKS ── */
+    .steps-section {
+      padding: 0 2rem 5rem;
+      max-width: 900px; margin: 0 auto;
+    }
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: flex; gap: 2rem; align-items: flex-start;
+      padding: 2rem 0;
+      border-left: 2px solid rgba(0,255,136,0.15);
+      padding-left: 2rem;
+      position: relative;
+    }
+    .step::before {
+      content: '';
+      position: absolute; left: -7px; top: 2.4rem;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--neon-green);
+      box-shadow: 0 0 15px var(--neon-green);
+    }
+    .step-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 3rem; font-weight: 900; line-height: 1;
+      color: rgba(0,255,136,0.1);
+      min-width: 60px;
+    }
+    .step-content {}
+    .step-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1rem; color: #fff; margin-bottom: 0.5rem;
+    }
+    .step-desc { color: rgba(224,255,232,0.55); font-size: 0.95rem; line-height: 1.7; }
+    .step-code {
+      display: inline-block; margin-top: 0.5rem;
+      background: rgba(0,255,136,0.08);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 6px; padding: 4px 12px;
+      font-family: monospace; font-size: 0.85rem;
+      color: var(--neon-green);
+    }
+
+    /* ── DEPLOY SECTION ── */
+    .deploy-section {
+      padding: 0 2rem 5rem;
+      max-width: 900px; margin: 0 auto;
+    }
+    .deploy-card {
+      background: linear-gradient(135deg, rgba(0,255,136,0.05), rgba(0,229,255,0.03));
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 16px; padding: 3rem;
+      text-align: center;
+    }
+    .deploy-icon { font-size: 4rem; margin-bottom: 1rem; display: block; }
+    .deploy-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem; color: #fff; margin-bottom: 0.8rem;
+    }
+    .deploy-desc { color: rgba(224,255,232,0.55); margin-bottom: 2rem; line-height: 1.8; }
+    .deploy-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 6px; margin-bottom: 1rem;
+    }
+    .footer-text { color: rgba(224,255,232,0.3); font-size: 0.85rem; letter-spacing: 1px; }
+    .footer-text a { color: var(--neon-green); text-decoration: none; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* Floating particles */
+    .particle {
+      position: fixed; pointer-events: none; z-index: 0;
+      border-radius: 50%;
+      background: var(--neon-green);
+      animation: float linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.2; }
+      100% { transform: translateY(-100px) scale(1); opacity: 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .stat-item { padding: 1.5rem; }
+      .step { flex-direction: column; gap: 1rem; }
+      .step-num { font-size: 2rem; }
+    }
+
+    /* Scan line effect */
+    .scanline {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+      opacity: 0.3;
+      animation: scan 8s linear infinite;
+      pointer-events: none; z-index: 999;
+    }
+    @keyframes scan { from { top: -2px; } to { top: 100vh; } }
+  </style>
+</head>
+<body>
+
+  <div class="scanline"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">ALONE</div>
+    <ul class="nav-links">
+      <li><a href="/pair" style="color:var(--neon-green); font-weight:bold;">⚡ Pair Web</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#commands">Commands</a></li>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#deploy">Deploy</a></li>
+    </ul>
+    <a href="/pair" class="btn-primary" style="padding:8px 20px;font-size:0.75rem">
+      🔐 Pair WhatsApp
+    </a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Bot Online · 268 Commands Ready
+    </div>
+    <h1 class="hero-title">ALONE</h1>
+    <p class="hero-sub">Futuristic WhatsApp Bot</p>
+    <p class="hero-desc">
+      Multi-session · Multi-language · AI powered WhatsApp bot built with Baileys & Node.js.
+      Download media, watch films, manage groups and more — all from WhatsApp.
+    </p>
+    <div class="hero-btns">
+      <a href="/pair" class="btn-primary" style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-green)); box-shadow: 0 0 35px rgba(0,229,255,0.5);">⚡ Get Pairing Code</a>
+      <a href="#setup" class="btn-outline">🚀 Setup Guide</a>
+      <a href="https://github.com/Akarshana0/ALONE-BOT-PRO" class="btn-outline" target="_blank">⭐ GitHub</a>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num" data-count="268">0</span>
+      <span class="stat-label">Commands</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-count="4">0</span>
+      <span class="stat-label">Languages</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-count="10">0</span>
+      <span class="stat-label">Max Sessions</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-count="1800">0</span>
+      <span class="stat-label">Max Film MB</span>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-header reveal">
+      <p class="section-tag">// What It Does</p>
+      <h2 class="section-title">Packed With Power</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">🎞️</span>
+        <div class="feature-title">Film Downloader</div>
+        <div class="feature-desc">Download full-length movies up to 1.8GB as a single WhatsApp document. Streams to disk, never RAM. Auto quality stepping — 1080p → 720p → 480p.</div>
+        <span class="feature-tag">HD STREAMING</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">📥</span>
+        <div class="feature-title">Auto Link Downloader</div>
+        <div class="feature-desc">Just send a link — bot downloads it automatically. TikTok, Instagram, Facebook, Twitter/X, YouTube, Pinterest, SoundCloud and more.</div>
+        <span class="feature-tag">AUTO DETECT</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">AI Integration</div>
+        <div class="feature-desc">GPT-4o and Gemini 2.0 Flash built-in. Ask questions, generate content, analyze images — straight from WhatsApp chat.</div>
+        <span class="feature-tag">GPT + GEMINI</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-title">VIP Anti-Delete</div>
+        <div class="feature-desc">Every message to the owner is cached. If someone deletes it — the bot re-delivers it instantly. Texts, images, videos, voice notes — all saved.</div>
+        <span class="feature-tag">VAULT PROTECTED</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">👥</span>
+        <div class="feature-title">Group Management</div>
+        <div class="feature-desc">Anti-link, bad-word filter, spam protection, warn system, cyberpunk welcome cards, goodbye cards and full moderation suite.</div>
+        <span class="feature-tag">FULL CONTROL</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">🌐</span>
+        <div class="feature-title">Multi-Language</div>
+        <div class="feature-desc">Full UI support for English, සිංහල, العربية and हिन्दी. Dynamic text is auto-translated in real time for each user.</div>
+        <span class="feature-tag">4 LANGUAGES</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">📱</span>
+        <div class="feature-title">Multi-Session</div>
+        <div class="feature-desc">One bot, multiple WhatsApp numbers linked simultaneously. Sessions survive server restarts — all persisted in MongoDB Atlas.</div>
+        <span class="feature-tag">PERSISTENT</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">🎨</span>
+        <div class="feature-title">Image Tools</div>
+        <div class="feature-desc">Logo maker, sticker creator, image filters, background remover, AI image generation and more — all inside WhatsApp.</div>
+        <span class="feature-tag">CREATIVE SUITE</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-glow"></div>
+        <span class="feature-icon">⚡</span>
+        <div class="feature-title">Lightning Fast</div>
+        <div class="feature-desc">Built on Baileys WebSocket — no Selenium, no browser overhead. Direct WhatsApp Web protocol for maximum speed.</div>
+        <span class="feature-tag">BAILEYS ENGINE</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMANDS -->
+  <section id="commands">
+    <div class="section-header reveal">
+      <p class="section-tag">// 268 Commands</p>
+      <h2 class="section-title">Command Arsenal</h2>
+    </div>
+    <div class="commands-section">
+      <div class="cmd-grid reveal">
+        <div class="cmd-category">
+          <span class="cmd-cat-icon">🎞️</span>
+          <div class="cmd-cat-name">Film</div>
+          <ul class="cmd-list">
+            <li><span>.film</span> &lt;title&gt;</li>
+            <li><span>.filmdl</span> &lt;url&gt;</li>
+            <li><span>.filmstatus</span></li>
+            <li><span>.filmcancel</span></li>
+          </ul>
+        </div>
+        <div class="cmd-category">
+          <span class="cmd-cat-icon">📥</span>
+          <div class="cmd-cat-name">Download</div>
+          <ul class="cmd-list">
+            <li><span>.download</span> &lt;url&gt;</li>
+            <li><span>.tiktok</span></li>
+            <li><span>.ig</span> / <span>.fb</span></li>
+            <li><span>.yt</span> / <span>.pin</span></li>
+          </ul>
+        </div>
+        <div class="cmd-category">
+          <span class="cmd-cat-icon">🤖</span>
+          <div class="cmd-cat-name">AI</div>
+          <ul class="cmd-list">
+            <li><span>.gpt</span> &lt;prompt&gt;</li>
+            <li><span>.gemini</span></li>
+            <li><span>.imagine</span></li>
+            <li><span>.translate</span></li>
+          </ul>
+        </div>
+        <div class="cmd-category">
+          <span class="cmd-cat-icon">👥</span>
+          <div class="cmd-cat-name">Group</div>
+          <ul class="cmd-list">
+            <li><span>.kick</span> / <span>.add</span></li>
+            <li><span>.warn</span> / <span>.ban</span></li>
+            <li><span>.antilink</span></li>
+            <li><span>.welcome</span></li>
+          </ul>
+        </div>
+        <div class="cmd-category">
+          <span class="cmd-cat-icon">🎨</span>
+          <div class="cmd-cat-name">Image</div>
+          <ul class="cmd-list">
+            <li><span>.sticker</span></li>
+            <li><span>.logo</span></li>
+            <li><span>.rembg</span></li>
+            <li><span>.enhance</span></li>
+          </ul>
+        </div>
+        <div class="cmd-category">
+          <span class="cmd-cat-icon">🛠️</span>
+          <div class="cmd-cat-name">Tools</div>
+          <ul class="cmd-list">
+            <li><span>.calc</span></li>
+            <li><span>.weather</span></li>
+            <li><span>.movie</span></li>
+            <li><span>.tts</span></li>
+          </ul>
+        </div>
+        <div class="cmd-category">
+          <span class="cmd-cat-icon">🎮</span>
+          <div class="cmd-cat-name">Fun</div>
+          <ul class="cmd-list">
+            <li><span>.meme</span></li>
+            <li><span>.joke</span></li>
+            <li><span>.quote</span></li>
+            <li><span>.dare</span></li>
+          </ul>
+        </div>
+        <div class="cmd-category">
+          <span class="cmd-cat-icon">⚙️</span>
+          <div class="cmd-cat-name">Settings</div>
+          <ul class="cmd-list">
+            <li><span>.settings</span></li>
+            <li><span>.set</span> &lt;feature&gt;</li>
+            <li><span>.lang</span></li>
+            <li><span>.prefix</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TERMINAL -->
+  <section id="setup">
+    <div class="section-header reveal">
+      <p class="section-tag">// Quick Setup</p>
+      <h2 class="section-title">Get Running in Minutes</h2>
+    </div>
+    <div class="terminal-section">
+      <div class="terminal reveal">
+        <div class="terminal-bar">
+          <div class="t-dot t-red"></div>
+          <div class="t-dot t-yellow"></div>
+          <div class="t-dot t-green"></div>
+          <span class="t-title">ALONE BOT — TERMINAL</span>
+        </div>
+        <div class="terminal-body">
+          <div class="t-line"><span class="t-prompt">$ </span><span class="t-cmd">git clone https://github.com/Akarshana0/ALONE-BOT-PRO.git</span></div>
+          <div class="t-line"><span class="t-out">Cloning into 'alone-bot'...</span></div>
+          <div class="t-line"><span class="t-success">✓ Done.</span></div>
+          <br/>
+          <div class="t-line"><span class="t-prompt">$ </span><span class="t-cmd">cd alone-bot &amp;&amp; npm install</span></div>
+          <div class="t-line"><span class="t-out">Installing 268 command modules...</span></div>
+          <div class="t-line"><span class="t-success">✓ node_modules ready.</span></div>
+          <br/>
+          <div class="t-line"><span class="t-prompt">$ </span><span class="t-cmd">cp .env.example .env</span></div>
+          <div class="t-line"><span class="t-out"># Set MONGODB_URI, OWNER_NUMBER, PAIR_NUMBER</span></div>
+          <br/>
+          <div class="t-line"><span class="t-prompt">$ </span><span class="t-cmd">npm start</span></div>
+          <div class="t-line"><span class="t-success">🗄️  MongoDB connected</span></div>
+          <div class="t-line"><span class="t-info">🤖 ALONE — 268 commands loaded</span></div>
+          <div class="t-line"><span class="t-warn">🔐 [main] PAIRING CODE for +94xxxxxxxxx: XXXX-XXXX</span></div>
+          <div class="t-line"><span class="t-success">⚡ [main] connected as +94xxxxxxxxx</span></div>
+          <div class="t-line"><span class="t-prompt">$ </span><span class="cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <div class="section-header reveal">
+      <p class="section-tag">// Step by Step</p>
+      <h2 class="section-title">How to Connect</h2>
+    </div>
+    <div class="steps-section">
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <div class="step-title">Setup MongoDB Atlas</div>
+            <div class="step-desc">Create a free MongoDB Atlas cluster. Copy your connection string and set it as MONGODB_URI in your .env file.</div>
+            <span class="step-code">MONGODB_URI=mongodb+srv://...</span>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <div class="step-title">Configure Your Number</div>
+            <div class="step-desc">Set your WhatsApp number (with country code, digits only) as OWNER_NUMBER and PAIR_NUMBER in .env.</div>
+            <span class="step-code">OWNER_NUMBER=94714768679</span>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <div class="step-title">Start the Bot</div>
+            <div class="step-desc">Run npm start. The bot connects to MongoDB, loads all commands, then generates a pairing code in the terminal.</div>
+            <span class="step-code">npm start</span>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <div class="step-title">Link WhatsApp</div>
+            <div class="step-desc">On your phone: WhatsApp → Linked Devices → Link a Device → Link with phone number → Enter the pairing code.</div>
+            <span class="step-code">XXXX-XXXX  ← enter in WhatsApp</span>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">05</div>
+          <div class="step-content">
+            <div class="step-title">You're Live! 🎉</div>
+            <div class="step-desc">The bot sends you a welcome message. Type .menu to see all commands. Enjoy 268 features!</div>
+            <span class="step-code">.menu</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEPLOY -->
+  <section id="deploy">
+    <div class="section-header reveal">
+      <p class="section-tag">// Cloud Deploy</p>
+      <h2 class="section-title">Deploy to Cloud</h2>
+    </div>
+    <div class="deploy-section">
+      <div class="deploy-card reveal">
+        <span class="deploy-icon">☁️</span>
+        <div class="deploy-title">Heroku Ready</div>
+        <div class="deploy-desc">
+          ALONE is fully Heroku-ready with a Procfile, app.json and setup script included.<br/>
+          Sessions live in MongoDB — dyno restarts never log you out.<br/><br/>
+          <code style="color:var(--neon-green);font-size:0.9rem">bash setup.sh heroku &lt;your-app-name&gt;</code>
+        </div>
+        <div class="deploy-btns">
+          <a href="https://heroku.com/deploy" class="btn-primary" target="_blank">🚀 Deploy to Heroku</a>
+          <a href="https://github.com/Akarshana0/ALONE-BOT-PRO" class="btn-outline" target="_blank">📦 View Source</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">ALONE</div>
+    <p class="footer-text">
+      Built with ⚡ by <a href="https://wa.me/94714768679">AKARSHANA</a> ·
+      Powered by <a href="https://github.com/WhiskeySockets/Baileys" target="_blank">Baileys</a> ·
+      MIT License
+    </p>
+    <br/>
+    <p class="footer-text" style="opacity:0.5">© 2024 ALONE BOT · All rights reserved</p>
+  </footer>
+
+  <script>
+    // Particle system
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 3 + 1;
+      p.style.cssText = `
+        width:${size}px; height:${size}px;
+        left:${Math.random()*100}vw;
+        animation-duration:${Math.random()*15+10}s;
+        animation-delay:${Math.random()*10}s;
+        opacity:${Math.random()*0.5+0.1};
+        background:${Math.random()>0.5?'#00ff88':'#00e5ff'};
+      `;
+      document.body.appendChild(p);
+    }
+    for (let i = 0; i < 30; i++) createParticle();
+
+    // Counter animation
+    function animateCounter(el) {
+      const target = parseInt(el.dataset.count);
+      const duration = 2000;
+      const start = performance.now();
+      function update(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * target).toLocaleString();
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // Intersection Observer for reveal + counters
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          e.target.querySelectorAll('[data-count]').forEach(animateCounter);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Stats bar counter trigger
+    const statsIo = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.querySelectorAll('[data-count]').forEach(animateCounter);
+          statsIo.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelector('.stats-bar') && statsIo.observe(document.querySelector('.stats-bar'));
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>

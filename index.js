@@ -16,8 +16,9 @@ const log = require('./src/logger');
   await sessions.startMain();
   sessions.restoreAll().catch((e) => log.error({ err: e.message }, 'restoreAll'));
 
-  // optional health endpoint (only if running as a Heroku "web" dyno)
-  if (process.env.PORT) http.createServer((_, res) => res.end(`${cfg.botName} online`)).listen(process.env.PORT);
+  // Start web & pairing server (works locally & on cloud platforms)
+  const { startServer } = require('./src/server');
+  startServer(process.env.PORT || 3000);
 
   process.on('unhandledRejection', (e) => log.error({ err: e }, 'unhandledRejection'));
   process.on('uncaughtException', (e) => log.error({ err: e }, 'uncaughtException'));

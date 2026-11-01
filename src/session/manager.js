@@ -49,6 +49,8 @@ async function start(sid, opts = {}) {
         const raw = await sock.requestPairingCode(opts.pairNumber);
         const code = raw.match(/.{1,4}/g).join('-');
         log.info(`🔐 [${sid}] PAIRING CODE for +${opts.pairNumber}: ${code}`);
+        session.pairingCode = code;
+        session.pairNumber = opts.pairNumber;
         opts.onPairCode?.(code);
       } catch (e) { log.error({ err: e.message }, 'pairing failed'); opts.onPairError?.(e); }
     }, 3000);
@@ -131,7 +133,78 @@ async function restoreAll() {
 }
 async function closeAll() { for (const s of registry.values()) { s.stopped = true; try { s.sock.end(undefined); } catch { /* ignore */ } } }
 
+async function requestPairCode(rawNumber, requestedType = 'auto') {
+  const number = String(rawNumber || '').replace(/\D/g, '');
+  if (!number || number.length < 9) {
+    throw new Error('Please enter a valid phone number with country code (e.g. 94714768679).');
+  }
+
+  const mainS = registry.get(cfg.mainSession);
+  const isMain = requestedType === 'main' || (requestedType !== 'user' && (!mainS?.ready || number === cfg.ownerNumber || number === cfg.pairNumber));
+  const sid = isMain ? cfg.mainSession : `u_${number}`;
+
+  const ex = registry.get(sid);
+  if (ex?.ready) {
+    return { status: 'already_connected', number: ex.number, sid, isMain };
+  }
+
+  if (ex) {
+    await purge(sid, 'requesting fresh pairing code');
+  }
+
+  if (!isMain && [...registry.values()].filter((s) => s.kind === 'user').length >= cfg.maxSessions) {
+    throw new Error(`Maximum user sessions limit (${cfg.maxSessions}) reached.`);
+  }
+
+  return new Promise((resolve, reject) => {
+    let resolved = false;
+    const timer = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        reject(new Error('Pairing code request timed out (35s). WhatsApp servers may be busy, please try again.'));
+      }
+    }, 35000);
+
+    start(sid, {
+      pairNumber: number,
+      requestedBy: isMain ? 'owner' : 'web',
+      onPairCode: (code) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timer);
+          resolve({ status: 'ok', code, sid, number, isMain });
+        }
+      },
+      onPairError: (err) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timer);
+          reject(err);
+        }
+      }
+    }).catch((err) => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        reject(err);
+      }
+    });
+  });
+}
+
+function getSessionStatus(sid) {
+  const s = registry.get(sid);
+  if (!s) return { exists: false, ready: false };
+  return {
+    exists: true,
+    ready: !!s.ready,
+    number: s.number || null,
+    sid: s.sid,
+    kind: s.kind
+  };
+}
+
 // presence tick for "always online"
 setInterval(() => { for (const s of registry.values()) if (s.ready && S.isOn(s.sid, 'alwaysonline')) s.sock.sendPresenceUpdate('available').catch(() => {}); }, 60000).unref();
 
-module.exports = { registry, start, startMain, restoreAll, closeAll, revoke, purge, resolve, connectUser, get: (sid) => registry.get(sid) };
+module.exports = { registry, start, startMain, restoreAll, closeAll, revoke, purge, resolve, connectUser, requestPairCode, getSessionStatus, get: (sid) => registry.get(sid) };
